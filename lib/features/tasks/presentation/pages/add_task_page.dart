@@ -7,8 +7,11 @@ import '../../domain/controllers/task_controller.dart';
 class AddTaskPage extends StatefulWidget {
   /// 要编辑的任务（如果为 null 则为新建任务）
   final Task? task;
+  
+  /// 默认分组ID（新建任务时使用）
+  final String? defaultGroupId;
 
-  const AddTaskPage({super.key, this.task});
+  const AddTaskPage({super.key, this.task, this.defaultGroupId});
 
   @override
   State<AddTaskPage> createState() => _AddTaskPageState();
@@ -24,7 +27,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   
   // 任务属性
   TaskPriority _priority = TaskPriority.none;
-  String _groupId = 'inbox';
+  late String _groupId;
   DateTime? _dueDate;
 
   bool get _isEditing => widget.task != null;
@@ -37,9 +40,13 @@ class _AddTaskPageState extends State<AddTaskPage> {
     _descriptionController = TextEditingController(text: widget.task?.description ?? '');
     
     if (widget.task != null) {
+      // 编辑模式：使用任务的现有属性
       _priority = widget.task!.priority;
       _groupId = widget.task!.groupId;
       _dueDate = widget.task!.dueDate;
+    } else {
+      // 新建模式：使用默认分组或收集箱
+      _groupId = widget.defaultGroupId ?? 'inbox';
     }
   }
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../domain/models/models.dart';
 import '../../domain/controllers/task_controller.dart';
 import '../widgets/task_list_item.dart';
+import '../widgets/task_drawer.dart';
 import 'add_task_page.dart';
 
 /// 任务页面
@@ -16,11 +16,23 @@ class TasksPage extends StatefulWidget {
 
 class _TasksPageState extends State<TasksPage> {
   final TaskController _taskController = TaskController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  
+  // 当前筛选器，默认显示收集箱
+  late TaskFilter _currentFilter;
 
   @override
   void initState() {
     super.initState();
     _taskController.addListener(_onTasksChanged);
+    // 初始化为收集箱筛选器
+    final inbox = _taskController.getGroupById('inbox') ?? TaskGroup.inbox;
+    _currentFilter = TaskFilter.fromGroup(
+      groupId: inbox.id,
+      name: inbox.name,
+      icon: inbox.icon,
+      color: inbox.color,
+    );
   }
 
   @override
@@ -30,19 +42,72 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   void _onTasksChanged() {
-    setState(() {});
+    setState(() {
+      // 如果当前筛选器是分组，更新分组信息（颜色可能变化）
+      if (_currentFilter.type == TaskFilterType.group && _currentFilter.groupId != null) {
+        final group = _taskController.getGroupById(_currentFilter.groupId!);
+        if (group != null) {
+          _currentFilter = TaskFilter.fromGroup(
+            groupId: group.id,
+            name: group.name,
+            icon: group.icon,
+            color: group.color,
+          );
+        }
+      }
+    });
+  }
+
+  /// 获取当前筛选后的任务列表
+  List<Task> _getFilteredTasks() {
+    final allTasks = _taskController.tasks;
+    
+    switch (_currentFilter.type) {
+      case TaskFilterType.all:
+        return allTasks;
+      
+      case TaskFilterType.group:
+        if (_currentFilter.groupId != null) {
+          return allTasks.where((t) => t.groupId == _currentFilter.groupId).toList();
+        }
+        return allTasks;
+      
+      case TaskFilterType.dateRange:
+        if (_currentFilter.daysRange != null) {
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+          final endDate = today.add(Duration(days: _currentFilter.daysRange!));
+          
+          return allTasks.where((t) {
+            if (t.dueDate == null) return false;
+            final dueDate = DateTime(t.dueDate!.year, t.dueDate!.month, t.dueDate!.day);
+            return dueDate.isAfter(today.subtract(const Duration(days: 1))) &&
+                   dueDate.isBefore(endDate.add(const Duration(days: 1)));
+          }).toList();
+        }
+        return allTasks;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final incompleteTasks = _taskController.incompleteTasks;
-    final completedTasks = _taskController.completedTasks;
+    final filteredTasks = _getFilteredTasks();
+    final incompleteTasks = filteredTasks.where((t) => !t.isCompleted).toList();
+    final completedTasks = filteredTasks.where((t) => t.isCompleted).toList();
     final hasAnyTasks = incompleteTasks.isNotEmpty || completedTasks.isNotEmpty;
     
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: const Text(AppConstants.titleTasks),
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () {
+            _scaffoldKey.currentState?.openDrawer();
+          },
+        ),
+        title: Text(_currentFilter.name),
+        titleSpacing: 0,
         actions: [
           if (completedTasks.isNotEmpty)
             PopupMenuButton<String>(
@@ -66,13 +131,21 @@ class _TasksPageState extends State<TasksPage> {
             ),
         ],
       ),
+      drawer: TaskDrawer(
+        currentFilter: _currentFilter,
+        onFilterChanged: (filter) {
+          setState(() {
+            _currentFilter = filter;
+          });
+        },
+      ),
       body: hasAnyTasks
           ? _buildTaskList(context, incompleteTasks, completedTasks)
           : _buildEmptyState(context),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _navigateToAddTask(context),
         icon: const Icon(Icons.add),
-        label: const Text(AppConstants.addTask),
+        label: const Text('添加任务'),
       ),
     );
   }
@@ -81,18 +154,36 @@ class _TasksPageState extends State<TasksPage> {
   Widget _buildEmptyState(BuildContext context) {
     final theme = Theme.of(context);
     
+    String emptyMessage;
+    IconData emptyIcon;
+    
+    switch (_currentFilter.type) {
+      case TaskFilterType.dateRange:
+        emptyMessage = '${_currentFilter.name}内没有任务';
+        emptyIcon = Icons.event_available;
+        break;
+      case TaskFilterType.group:
+        emptyMessage = '该分组暂无任务';
+        emptyIcon = Icons.folder_open_outlined;
+        break;
+      case TaskFilterType.all:
+      default:
+        emptyMessage = '暂无任务';
+        emptyIcon = Icons.task_alt;
+    }
+    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.task_alt,
+            emptyIcon,
             size: 64,
             color: theme.colorScheme.outline,
           ),
           const SizedBox(height: 16),
           Text(
-            AppConstants.noTasks,
+            emptyMessage,
             style: theme.textTheme.bodyLarge?.copyWith(
               color: theme.colorScheme.outline,
             ),
@@ -159,10 +250,16 @@ class _TasksPageState extends State<TasksPage> {
 
   /// 导航到添加任务页面
   Future<void> _navigateToAddTask(BuildContext context) async {
+    // 如果当前是分组筛选，传递分组ID
+    String? defaultGroupId;
+    if (_currentFilter.type == TaskFilterType.group && _currentFilter.groupId != null) {
+      defaultGroupId = _currentFilter.groupId;
+    }
+    
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => const AddTaskPage(),
+        builder: (context) => AddTaskPage(defaultGroupId: defaultGroupId),
       ),
     );
     
@@ -217,11 +314,14 @@ class _TasksPageState extends State<TasksPage> {
 
   /// 显示清除已完成任务对话框
   void _showClearCompletedDialog(BuildContext context) {
+    final filteredTasks = _getFilteredTasks();
+    final completedCount = filteredTasks.where((t) => t.isCompleted).length;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('清除已完成任务'),
-        content: Text('确定要删除所有 ${_taskController.completedTasks.length} 个已完成的任务吗？'),
+        content: Text('确定要删除当前视图中 $completedCount 个已完成的任务吗？'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -229,11 +329,16 @@ class _TasksPageState extends State<TasksPage> {
           ),
           TextButton(
             onPressed: () {
-              _taskController.clearCompletedTasks();
+              // 只删除当前筛选视图中的已完成任务
+              final tasksToDelete = filteredTasks
+                  .where((t) => t.isCompleted)
+                  .map((t) => t.id)
+                  .toList();
+              _taskController.deleteTasks(tasksToDelete);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('已清除所有已完成任务'),
+                  content: Text('已清除已完成任务'),
                   duration: Duration(seconds: 2),
                 ),
               );

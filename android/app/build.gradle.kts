@@ -7,8 +7,8 @@ plugins {
 
 android {
     namespace = "com.example.whats_app_kaede"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 35
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

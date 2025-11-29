@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/theme_controller.dart';
 import '../models/models.dart';
@@ -7,11 +6,11 @@ import '../models/models.dart';
 /// 管理任务和分组的状态，提供增删改查操作
 class TaskController extends ChangeNotifier {
   static final TaskController _instance = TaskController._internal();
-  
+
   factory TaskController() => _instance;
-  
+
   final ThemeController _themeController = ThemeController();
-  
+
   TaskController._internal() {
     // 监听主题变化，更新收集箱颜色
     _themeController.addListener(_onThemeChanged);
@@ -21,7 +20,7 @@ class TaskController extends ChangeNotifier {
 
   // 任务列表
   final List<Task> _tasks = [];
-  
+
   // 分组列表
   final List<TaskGroup> _groups = [];
 
@@ -60,12 +59,11 @@ class TaskController extends ChangeNotifier {
   List<TaskGroup> get groups => List.unmodifiable(_groups);
 
   /// 获取未完成的任务
-  List<Task> get incompleteTasks => 
+  List<Task> get incompleteTasks =>
       _tasks.where((t) => !t.isCompleted).toList();
 
   /// 获取已完成的任务
-  List<Task> get completedTasks => 
-      _tasks.where((t) => t.isCompleted).toList();
+  List<Task> get completedTasks => _tasks.where((t) => t.isCompleted).toList();
 
   /// 根据分组ID获取任务
   List<Task> getTasksByGroup(String groupId) {
@@ -82,11 +80,11 @@ class TaskController extends ChangeNotifier {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
-    
+
     return _tasks.where((t) {
       if (t.dueDate == null) return false;
       return t.dueDate!.isAfter(today.subtract(const Duration(seconds: 1))) &&
-             t.dueDate!.isBefore(tomorrow);
+          t.dueDate!.isBefore(tomorrow);
     }).toList();
   }
 
@@ -94,7 +92,7 @@ class TaskController extends ChangeNotifier {
   List<Task> get overdueTasks {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    
+
     return _tasks.where((t) {
       if (t.dueDate == null || t.isCompleted) return false;
       return t.dueDate!.isBefore(today);
@@ -197,11 +195,7 @@ class TaskController extends ChangeNotifier {
   }
 
   /// 创建并添加分组（便捷方法）
-  TaskGroup createGroup({
-    required String name,
-    Color? color,
-    IconData? icon,
-  }) {
+  TaskGroup createGroup({required String name, Color? color, IconData? icon}) {
     final now = DateTime.now();
     final group = TaskGroup(
       id: 'group_${now.millisecondsSinceEpoch}',
@@ -227,14 +221,14 @@ class TaskController extends ChangeNotifier {
   /// 删除分组（将该分组下的任务移到收集箱）
   void deleteGroup(String groupId) {
     if (groupId == 'inbox') return; // 不能删除收集箱
-    
+
     // 将该分组下的任务移到收集箱
     for (int i = 0; i < _tasks.length; i++) {
       if (_tasks[i].groupId == groupId) {
         _tasks[i] = _tasks[i].copyWith(groupId: 'inbox');
       }
     }
-    
+
     _groups.removeWhere((g) => g.id == groupId);
     notifyListeners();
   }

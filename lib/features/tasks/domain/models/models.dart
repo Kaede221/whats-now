@@ -1,5 +1,6 @@
 /// 任务模块数据模型导出
 /// 统一导出所有任务相关的数据模型
+library;
 
 export 'task.dart';
 export 'task_filter.dart';

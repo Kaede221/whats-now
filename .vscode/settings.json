@@ -5,15 +5,15 @@
     "**/.hg": true,
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
-    ".dart_tool": true,
     ".idea": true,
     ".vscode": true,
-    "build": true
+    "build": true,
+    ".dart_tool": true
   },
   "hide-files.files": [
-    ".dart_tool",
     ".idea",
     ".vscode",
-    "build"
+    "build",
+    ".dart_tool"
   ]
 }

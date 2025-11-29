@@ -5,54 +5,54 @@ import 'task_priority.dart';
 class Task {
   /// 唯一标识符
   final String id;
-  
+
   /// 任务标题（必填）
   final String title;
-  
+
   /// 任务详情/描述（可选）
   final String? description;
-  
+
   /// 优先级
   final TaskPriority priority;
-  
+
   /// 所属分组ID
   final String groupId;
-  
+
   /// 截止日期（可选）
   final DateTime? dueDate;
-  
+
   /// 是否已完成
   final bool isCompleted;
-  
+
   /// 完成时间
   final DateTime? completedAt;
-  
+
   /// 创建时间
   final DateTime createdAt;
-  
+
   /// 更新时间
   final DateTime updatedAt;
 
   // ===== 以下为可扩展字段，预留给未来功能 =====
-  
+
   /// 提醒时间（可选）
   final DateTime? reminderAt;
-  
+
   /// 重复规则（可选，预留）
   final String? repeatRule;
-  
+
   /// 标签列表（可选，预留）
   final List<String>? tags;
-  
+
   /// 附件列表（可选，预留）
   final List<String>? attachments;
-  
+
   /// 子任务ID列表（可选，预留）
   final List<String>? subtaskIds;
-  
+
   /// 父任务ID（可选，预留）
   final String? parentId;
-  
+
   /// 排序顺序
   final int sortOrder;
 
@@ -103,9 +103,7 @@ class Task {
 
   /// 生成唯一ID
   static String _generateId() {
-    return DateTime.now().millisecondsSinceEpoch.toString() +
-        '_' +
-        (DateTime.now().microsecond).toString();
+    return '${DateTime.now().millisecondsSinceEpoch}_${DateTime.now().microsecond}';
   }
 
   /// 复制并修改
@@ -161,18 +159,12 @@ class Task {
 
   /// 标记为完成
   Task markAsCompleted() {
-    return copyWith(
-      isCompleted: true,
-      completedAt: DateTime.now(),
-    );
+    return copyWith(isCompleted: true, completedAt: DateTime.now());
   }
 
   /// 标记为未完成
   Task markAsIncomplete() {
-    return copyWith(
-      isCompleted: false,
-      clearCompletedAt: true,
-    );
+    return copyWith(isCompleted: false, clearCompletedAt: true);
   }
 
   /// 切换完成状态

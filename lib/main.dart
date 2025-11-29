@@ -19,19 +19,19 @@ void main() async {
   // 加载任务数据
   await TaskController().loadFromStorage();
   
-  runApp(const KaedeTasksApp());
+  runApp(const WhatsNowApp());
 }
 
-/// Kaede Tasks 应用入口
-/// 任务管理应用，支持多平台
-class KaedeTasksApp extends StatefulWidget {
-  const KaedeTasksApp({super.key});
+/// Whats Now 应用入口
+/// 任务管理应用，支持多平台 - Manage Now
+class WhatsNowApp extends StatefulWidget {
+  const WhatsNowApp({super.key});
 
   @override
-  State<KaedeTasksApp> createState() => _KaedeTasksAppState();
+  State<WhatsNowApp> createState() => _WhatsNowAppState();
 }
 
-class _KaedeTasksAppState extends State<KaedeTasksApp> {
+class _WhatsNowAppState extends State<WhatsNowApp> {
   final ThemeController _themeController = ThemeController();
 
   @override

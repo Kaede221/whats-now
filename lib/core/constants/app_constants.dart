@@ -4,8 +4,9 @@ class AppConstants {
   AppConstants._();
 
   // 应用信息
-  static const String appName = 'Kaede Tasks';
+  static const String appName = 'Whats Now';
   static const String appVersion = '1.0.0';
+  static const String appSlogan = 'Manage Now';
   static const String appAuthor = 'KaedeShimizu';
   static const String appGithubUrl = 'https://github.com/Kaede221/whats-now.git';
 

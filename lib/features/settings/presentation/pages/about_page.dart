@@ -34,17 +34,12 @@ class AboutPage extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 32),
             child: Column(
               children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Icon(
-                    Icons.check_circle_outline,
-                    size: 48,
-                    color: theme.colorScheme.primary,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    'assets/icons/app_icon.png',
+                    width: 80,
+                    height: 80,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -52,6 +47,13 @@ class AboutPage extends StatelessWidget {
                   AppConstants.appName,
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  AppConstants.appSlogan,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.outline,
                   ),
                 ),
               ],

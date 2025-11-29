@@ -4,7 +4,16 @@
     "**/.svn": true,
     "**/.hg": true,
     "**/.DS_Store": true,
-    "**/Thumbs.db": true
+    "**/Thumbs.db": true,
+    ".dart_tool": true,
+    ".idea": true,
+    ".vscode": true,
+    "build": true
   },
-  "hide-files.files": []
+  "hide-files.files": [
+    ".dart_tool",
+    ".idea",
+    ".vscode",
+    "build"
+  ]
 }

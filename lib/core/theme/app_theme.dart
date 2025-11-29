@@ -5,54 +5,28 @@ import 'package:flutter/material.dart';
 class AppTheme {
   AppTheme._();
 
-  // 主色调
-  static const Color _primaryColor = Color(0xFF6750A4);
-  static const Color _secondaryColor = Color(0xFF625B71);
-
-  /// 浅色主题
-  static ThemeData get lightTheme {
+  /// 根据种子颜色生成浅色主题
+  static ThemeData lightTheme(Color seedColor) {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: _primaryColor,
+      seedColor: seedColor,
       brightness: Brightness.light,
     );
 
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: colorScheme,
-      appBarTheme: AppBarTheme(
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
-      ),
-      navigationBarTheme: NavigationBarThemeData(
-        elevation: 0,
-        backgroundColor: colorScheme.surface,
-        indicatorColor: colorScheme.secondaryContainer,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-      ),
-      cardTheme: CardThemeData(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        color: colorScheme.surfaceContainerHighest,
-      ),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        elevation: 2,
-        backgroundColor: colorScheme.primaryContainer,
-        foregroundColor: colorScheme.onPrimaryContainer,
-      ),
-    );
+    return _buildTheme(colorScheme);
   }
 
-  /// 深色主题
-  static ThemeData get darkTheme {
+  /// 根据种子颜色生成深色主题
+  static ThemeData darkTheme(Color seedColor) {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: _primaryColor,
+      seedColor: seedColor,
       brightness: Brightness.dark,
     );
 
+    return _buildTheme(colorScheme);
+  }
+
+  /// 构建主题数据
+  static ThemeData _buildTheme(ColorScheme colorScheme) {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
@@ -79,6 +53,16 @@ class AppTheme {
         elevation: 2,
         backgroundColor: colorScheme.primaryContainer,
         foregroundColor: colorScheme.onPrimaryContainer,
+      ),
+      listTileTheme: ListTileThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+        ),
       ),
     );
   }

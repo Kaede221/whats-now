@@ -32,12 +32,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppConstants.titleSettings),
-      ),
+      appBar: AppBar(title: const Text(AppConstants.titleSettings)),
       body: ListView(
         children: [
           // 外观设置分组
@@ -57,9 +53,9 @@ class _SettingsPageState extends State<SettingsPage> {
             color: _themeController.seedColor,
             onTap: () => _showColorPickerDialog(context),
           ),
-          
+
           const Divider(),
-          
+
           // 关于分组
           _buildSectionHeader(context, '关于'),
           _buildSettingsTile(
@@ -124,7 +120,8 @@ class _SettingsPageState extends State<SettingsPage> {
             runSpacing: 12,
             alignment: WrapAlignment.center,
             children: ThemeColors.presetColors.map((option) {
-              final isSelected = _themeController.seedColor.value == option.color.value;
+              final isSelected =
+                  _themeController.seedColor.value == option.color.value;
               return _ColorButton(
                 color: option.color,
                 name: option.name,
@@ -249,10 +246,7 @@ class _ColorButton extends StatelessWidget {
             color: color,
             shape: BoxShape.circle,
             border: isSelected
-                ? Border.all(
-                    color: theme.colorScheme.onSurface,
-                    width: 3,
-                  )
+                ? Border.all(color: theme.colorScheme.onSurface, width: 3)
                 : null,
             boxShadow: [
               BoxShadow(
@@ -263,11 +257,7 @@ class _ColorButton extends StatelessWidget {
             ],
           ),
           child: isSelected
-              ? Icon(
-                  Icons.check,
-                  color: _getContrastColor(color),
-                  size: 24,
-                )
+              ? Icon(Icons.check, color: _getContrastColor(color), size: 24)
               : null,
         ),
       ),

@@ -7,7 +7,7 @@ import '../../domain/controllers/task_controller.dart';
 class AddTaskPage extends StatefulWidget {
   /// 要编辑的任务（如果为 null 则为新建任务）
   final Task? task;
-  
+
   /// 默认分组ID（新建任务时使用）
   final String? defaultGroupId;
 
@@ -20,11 +20,11 @@ class AddTaskPage extends StatefulWidget {
 class _AddTaskPageState extends State<AddTaskPage> {
   final TaskController _taskController = TaskController();
   final _formKey = GlobalKey<FormState>();
-  
+
   // 表单控制器
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
-  
+
   // 任务属性
   TaskPriority _priority = TaskPriority.none;
   late String _groupId;
@@ -37,8 +37,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
     super.initState();
     _taskController.addListener(_onControllerChanged);
     _titleController = TextEditingController(text: widget.task?.title ?? '');
-    _descriptionController = TextEditingController(text: widget.task?.description ?? '');
-    
+    _descriptionController = TextEditingController(
+      text: widget.task?.description ?? '',
+    );
+
     if (widget.task != null) {
       // 编辑模式：使用任务的现有属性
       _priority = widget.task!.priority;
@@ -64,17 +66,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? '编辑任务' : '添加任务'),
-        actions: [
-          TextButton(
-            onPressed: _saveTask,
-            child: const Text('保存'),
-          ),
-        ],
+        actions: [TextButton(onPressed: _saveTask, child: const Text('保存'))],
       ),
       body: Form(
         key: _formKey,
@@ -97,9 +92,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 return null;
               },
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // 详情输入
             TextFormField(
               controller: _descriptionController,
@@ -112,23 +107,23 @@ class _AddTaskPageState extends State<AddTaskPage> {
               maxLines: 3,
               textInputAction: TextInputAction.newline,
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // 优先级选择
             _buildSectionTitle(context, '优先级'),
             const SizedBox(height: 8),
             _buildPrioritySelector(context),
-            
+
             const SizedBox(height: 24),
-            
+
             // 分组选择
             _buildSectionTitle(context, '分组'),
             const SizedBox(height: 8),
             _buildGroupSelector(context),
-            
+
             const SizedBox(height: 24),
-            
+
             // 日期选择
             _buildSectionTitle(context, '截止日期'),
             const SizedBox(height: 8),
@@ -174,9 +169,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
             color: isSelected ? priority.color : theme.colorScheme.outline,
           ),
           selectedColor: priority.color.withOpacity(0.2),
-          side: isSelected
-              ? BorderSide(color: priority.color, width: 2)
-              : null,
+          side: isSelected ? BorderSide(color: priority.color, width: 2) : null,
         );
       }).toList(),
     );
@@ -185,8 +178,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
   /// 构建分组选择器
   Widget _buildGroupSelector(BuildContext context) {
     final theme = Theme.of(context);
-    final currentGroup = _taskController.getGroupById(_groupId) ?? TaskGroup.inbox;
-    
+    final currentGroup =
+        _taskController.getGroupById(_groupId) ?? TaskGroup.inbox;
+
     return InkWell(
       onTap: () => _showGroupPicker(context),
       borderRadius: BorderRadius.circular(12),
@@ -201,15 +195,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
             Icon(currentGroup.icon, color: currentGroup.color),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                currentGroup.name,
-                style: theme.textTheme.bodyLarge,
-              ),
+              child: Text(currentGroup.name, style: theme.textTheme.bodyLarge),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: theme.colorScheme.outline,
-            ),
+            Icon(Icons.chevron_right, color: theme.colorScheme.outline),
           ],
         ),
       ),
@@ -220,7 +208,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   void _showGroupPicker(BuildContext context) {
     final groups = _taskController.groups;
     final theme = Theme.of(context);
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -234,10 +222,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      '选择分组',
-                      style: theme.textTheme.titleMedium,
-                    ),
+                    child: Text('选择分组', style: theme.textTheme.titleMedium),
                   ),
                   TextButton.icon(
                     onPressed: () {
@@ -251,20 +236,22 @@ class _AddTaskPageState extends State<AddTaskPage> {
               ),
             ),
             const Divider(height: 1),
-            
+
             // 分组列表
-            ...groups.map((group) => ListTile(
-              leading: Icon(group.icon, color: group.color),
-              title: Text(group.name),
-              trailing: _groupId == group.id
-                  ? Icon(Icons.check, color: theme.colorScheme.primary)
-                  : null,
-              onTap: () {
-                setState(() => _groupId = group.id);
-                Navigator.pop(context);
-              },
-            )),
-            
+            ...groups.map(
+              (group) => ListTile(
+                leading: Icon(group.icon, color: group.color),
+                title: Text(group.name),
+                trailing: _groupId == group.id
+                    ? Icon(Icons.check, color: theme.colorScheme.primary)
+                    : null,
+                onTap: () {
+                  setState(() => _groupId = group.id);
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+
             const SizedBox(height: 8),
           ],
         ),
@@ -277,7 +264,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
     final theme = Theme.of(context);
     final nameController = TextEditingController();
     Color selectedColor = const Color(0xFF6750A4);
-    
+
     // 预设颜色列表
     final presetColors = [
       const Color(0xFF6750A4), // 紫色
@@ -289,7 +276,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       const Color(0xFF00BCD4), // 青色
       const Color(0xFF795548), // 棕色
     ];
-    
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -309,9 +296,9 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 ),
                 autofocus: true,
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // 颜色选择
               Text(
                 '选择颜色',
@@ -389,7 +376,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
   /// 构建日期选择器
   Widget _buildDateSelector(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return InkWell(
       onTap: () => _selectDate(context),
       borderRadius: BorderRadius.circular(12),
@@ -403,20 +390,16 @@ class _AddTaskPageState extends State<AddTaskPage> {
           children: [
             Icon(
               Icons.calendar_today_outlined,
-              color: _dueDate != null 
-                  ? theme.colorScheme.primary 
+              color: _dueDate != null
+                  ? theme.colorScheme.primary
                   : theme.colorScheme.outline,
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                _dueDate != null 
-                    ? _formatDate(_dueDate!)
-                    : '未设置',
+                _dueDate != null ? _formatDate(_dueDate!) : '未设置',
                 style: theme.textTheme.bodyLarge?.copyWith(
-                  color: _dueDate != null 
-                      ? null 
-                      : theme.colorScheme.outline,
+                  color: _dueDate != null ? null : theme.colorScheme.outline,
                 ),
               ),
             ),
@@ -427,10 +410,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                 visualDensity: VisualDensity.compact,
               )
             else
-              Icon(
-                Icons.chevron_right,
-                color: theme.colorScheme.outline,
-              ),
+              Icon(Icons.chevron_right, color: theme.colorScheme.outline),
           ],
         ),
       ),
@@ -446,7 +426,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
       firstDate: now.subtract(const Duration(days: 365)),
       lastDate: now.add(const Duration(days: 365 * 5)),
     );
-    
+
     if (picked != null) {
       setState(() => _dueDate = picked);
     }
@@ -458,7 +438,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
     final dateOnly = DateTime(date.year, date.month, date.day);
-    
+
     if (dateOnly == today) {
       return '今天';
     } else if (dateOnly == tomorrow) {
@@ -475,10 +455,10 @@ class _AddTaskPageState extends State<AddTaskPage> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    
+
     final title = _titleController.text.trim();
     final description = _descriptionController.text.trim();
-    
+
     if (_isEditing) {
       // 更新现有任务
       final updatedTask = widget.task!.copyWith(
@@ -501,7 +481,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
         dueDate: _dueDate,
       );
     }
-    
+
     Navigator.pop(context, true);
   }
 }

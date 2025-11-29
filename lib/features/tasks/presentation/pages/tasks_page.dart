@@ -17,7 +17,7 @@ class TasksPage extends StatefulWidget {
 class _TasksPageState extends State<TasksPage> {
   final TaskController _taskController = TaskController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  
+
   // 当前筛选器，默认显示收集箱
   late TaskFilter _currentFilter;
 
@@ -44,7 +44,8 @@ class _TasksPageState extends State<TasksPage> {
   void _onTasksChanged() {
     setState(() {
       // 如果当前筛选器是分组，更新分组信息（颜色可能变化）
-      if (_currentFilter.type == TaskFilterType.group && _currentFilter.groupId != null) {
+      if (_currentFilter.type == TaskFilterType.group &&
+          _currentFilter.groupId != null) {
         final group = _taskController.getGroupById(_currentFilter.groupId!);
         if (group != null) {
           _currentFilter = TaskFilter.fromGroup(
@@ -61,28 +62,34 @@ class _TasksPageState extends State<TasksPage> {
   /// 获取当前筛选后的任务列表
   List<Task> _getFilteredTasks() {
     final allTasks = _taskController.tasks;
-    
+
     switch (_currentFilter.type) {
       case TaskFilterType.all:
         return allTasks;
-      
+
       case TaskFilterType.group:
         if (_currentFilter.groupId != null) {
-          return allTasks.where((t) => t.groupId == _currentFilter.groupId).toList();
+          return allTasks
+              .where((t) => t.groupId == _currentFilter.groupId)
+              .toList();
         }
         return allTasks;
-      
+
       case TaskFilterType.dateRange:
         if (_currentFilter.daysRange != null) {
           final now = DateTime.now();
           final today = DateTime(now.year, now.month, now.day);
           final endDate = today.add(Duration(days: _currentFilter.daysRange!));
-          
+
           return allTasks.where((t) {
             if (t.dueDate == null) return false;
-            final dueDate = DateTime(t.dueDate!.year, t.dueDate!.month, t.dueDate!.day);
+            final dueDate = DateTime(
+              t.dueDate!.year,
+              t.dueDate!.month,
+              t.dueDate!.day,
+            );
             return dueDate.isAfter(today.subtract(const Duration(days: 1))) &&
-                   dueDate.isBefore(endDate.add(const Duration(days: 1)));
+                dueDate.isBefore(endDate.add(const Duration(days: 1)));
           }).toList();
         }
         return allTasks;
@@ -96,7 +103,7 @@ class _TasksPageState extends State<TasksPage> {
     final incompleteTasks = filteredTasks.where((t) => !t.isCompleted).toList();
     final completedTasks = filteredTasks.where((t) => t.isCompleted).toList();
     final hasAnyTasks = incompleteTasks.isNotEmpty || completedTasks.isNotEmpty;
-    
+
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
@@ -153,10 +160,10 @@ class _TasksPageState extends State<TasksPage> {
   /// 构建空状态
   Widget _buildEmptyState(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     String emptyMessage;
     IconData emptyIcon;
-    
+
     switch (_currentFilter.type) {
       case TaskFilterType.dateRange:
         emptyMessage = '${_currentFilter.name}内没有任务';
@@ -167,20 +174,15 @@ class _TasksPageState extends State<TasksPage> {
         emptyIcon = Icons.folder_open_outlined;
         break;
       case TaskFilterType.all:
-      default:
         emptyMessage = '暂无任务';
         emptyIcon = Icons.task_alt;
     }
-    
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            emptyIcon,
-            size: 64,
-            color: theme.colorScheme.outline,
-          ),
+          Icon(emptyIcon, size: 64, color: theme.colorScheme.outline),
           const SizedBox(height: 16),
           Text(
             emptyMessage,
@@ -210,14 +212,17 @@ class _TasksPageState extends State<TasksPage> {
       padding: const EdgeInsets.only(top: 8, bottom: 88),
       children: [
         // 未完成的任务
-        ...incompleteTasks.map((task) => TaskListItem(
-          key: Key(task.id),
-          task: task,
-          onTap: () => _navigateToEditTask(context, task),
-          onToggleCompleted: () => _taskController.toggleTaskCompleted(task.id),
-          onDelete: () => _deleteTask(context, task),
-        )),
-        
+        ...incompleteTasks.map(
+          (task) => TaskListItem(
+            key: Key(task.id),
+            task: task,
+            onTap: () => _navigateToEditTask(context, task),
+            onToggleCompleted: () =>
+                _taskController.toggleTaskCompleted(task.id),
+            onDelete: () => _deleteTask(context, task),
+          ),
+        ),
+
         // 已完成的任务（可折叠）
         if (completedTasks.isNotEmpty)
           _buildCompletedSection(context, completedTasks),
@@ -226,9 +231,12 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   /// 构建已完成任务分组
-  Widget _buildCompletedSection(BuildContext context, List<Task> completedTasks) {
+  Widget _buildCompletedSection(
+    BuildContext context,
+    List<Task> completedTasks,
+  ) {
     final theme = Theme.of(context);
-    
+
     return ExpansionTile(
       initiallyExpanded: false,
       tilePadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -238,13 +246,18 @@ class _TasksPageState extends State<TasksPage> {
           color: theme.colorScheme.outline,
         ),
       ),
-      children: completedTasks.map((task) => TaskListItem(
-        key: Key(task.id),
-        task: task,
-        onTap: () => _navigateToEditTask(context, task),
-        onToggleCompleted: () => _taskController.toggleTaskCompleted(task.id),
-        onDelete: () => _deleteTask(context, task),
-      )).toList(),
+      children: completedTasks
+          .map(
+            (task) => TaskListItem(
+              key: Key(task.id),
+              task: task,
+              onTap: () => _navigateToEditTask(context, task),
+              onToggleCompleted: () =>
+                  _taskController.toggleTaskCompleted(task.id),
+              onDelete: () => _deleteTask(context, task),
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -252,24 +265,22 @@ class _TasksPageState extends State<TasksPage> {
   Future<void> _navigateToAddTask(BuildContext context) async {
     // 如果当前是分组筛选，传递分组ID
     String? defaultGroupId;
-    if (_currentFilter.type == TaskFilterType.group && _currentFilter.groupId != null) {
+    if (_currentFilter.type == TaskFilterType.group &&
+        _currentFilter.groupId != null) {
       defaultGroupId = _currentFilter.groupId;
     }
-    
+
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (context) => AddTaskPage(defaultGroupId: defaultGroupId),
       ),
     );
-    
+
     // 如果返回 true，表示任务已添加
     if (result == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('任务已添加'),
-          duration: Duration(seconds: 2),
-        ),
+        const SnackBar(content: Text('任务已添加'), duration: Duration(seconds: 2)),
       );
     }
   }
@@ -278,18 +289,13 @@ class _TasksPageState extends State<TasksPage> {
   Future<void> _navigateToEditTask(BuildContext context, Task task) async {
     final result = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        builder: (context) => AddTaskPage(task: task),
-      ),
+      MaterialPageRoute(builder: (context) => AddTaskPage(task: task)),
     );
-    
+
     // 如果返回 true，表示任务已更新
     if (result == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('任务已更新'),
-          duration: Duration(seconds: 2),
-        ),
+        const SnackBar(content: Text('任务已更新'), duration: Duration(seconds: 2)),
       );
     }
   }
@@ -297,7 +303,7 @@ class _TasksPageState extends State<TasksPage> {
   /// 删除任务
   void _deleteTask(BuildContext context, Task task) {
     _taskController.deleteTask(task.id);
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('已删除 "${task.title}"'),
@@ -316,7 +322,7 @@ class _TasksPageState extends State<TasksPage> {
   void _showClearCompletedDialog(BuildContext context) {
     final filteredTasks = _getFilteredTasks();
     final completedCount = filteredTasks.where((t) => t.isCompleted).length;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

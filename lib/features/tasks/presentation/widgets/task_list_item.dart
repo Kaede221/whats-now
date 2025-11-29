@@ -22,7 +22,7 @@ class TaskListItem extends StatefulWidget {
   State<TaskListItem> createState() => _TaskListItemState();
 }
 
-class _TaskListItemState extends State<TaskListItem> 
+class _TaskListItemState extends State<TaskListItem>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _strikethroughAnimation;
@@ -36,10 +36,7 @@ class _TaskListItemState extends State<TaskListItem>
       vsync: this,
     );
     _strikethroughAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
   }
 
@@ -52,7 +49,7 @@ class _TaskListItemState extends State<TaskListItem>
   /// 处理完成按钮点击
   void _handleToggleCompleted() {
     if (_isAnimating) return;
-    
+
     if (!widget.task.isCompleted) {
       // 未完成 -> 完成：播放动画后触发回调
       setState(() => _isAnimating = true);
@@ -70,8 +67,7 @@ class _TaskListItemState extends State<TaskListItem>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isCompleted = widget.task.isCompleted;
-    
+
     return Dismissible(
       key: Key(widget.task.id),
       direction: DismissDirection.endToStart,
@@ -80,10 +76,7 @@ class _TaskListItemState extends State<TaskListItem>
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 16),
         color: theme.colorScheme.error,
-        child: Icon(
-          Icons.delete_outline,
-          color: theme.colorScheme.onError,
-        ),
+        child: Icon(Icons.delete_outline, color: theme.colorScheme.onError),
       ),
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -102,15 +95,15 @@ class _TaskListItemState extends State<TaskListItem>
                     children: [
                       // 标题（带动画划线效果）
                       _buildAnimatedTitle(context),
-                      
+
                       // 详情
-                      if (widget.task.description != null && 
+                      if (widget.task.description != null &&
                           widget.task.description!.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: _buildAnimatedDescription(context),
                         ),
-                      
+
                       // 底部信息行（日期等）
                       if (widget.task.dueDate != null)
                         Padding(
@@ -120,9 +113,9 @@ class _TaskListItemState extends State<TaskListItem>
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(width: 12),
-                
+
                 // 完成状态复选框（右侧，垂直居中）
                 _buildCheckbox(context),
               ],
@@ -137,7 +130,7 @@ class _TaskListItemState extends State<TaskListItem>
   Widget _buildAnimatedTitle(BuildContext context) {
     final theme = Theme.of(context);
     final isCompleted = widget.task.isCompleted;
-    
+
     return AnimatedBuilder(
       animation: _strikethroughAnimation,
       builder: (context, child) {
@@ -152,11 +145,9 @@ class _TaskListItemState extends State<TaskListItem>
             widget.task.title,
             style: theme.textTheme.bodyLarge?.copyWith(
               decoration: isCompleted && !_isAnimating
-                  ? TextDecoration.lineThrough 
+                  ? TextDecoration.lineThrough
                   : null,
-              color: isCompleted 
-                  ? theme.colorScheme.outline 
-                  : null,
+              color: isCompleted ? theme.colorScheme.outline : null,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -170,7 +161,7 @@ class _TaskListItemState extends State<TaskListItem>
   Widget _buildAnimatedDescription(BuildContext context) {
     final theme = Theme.of(context);
     final isCompleted = widget.task.isCompleted;
-    
+
     return AnimatedBuilder(
       animation: _strikethroughAnimation,
       builder: (context, child) {
@@ -186,7 +177,7 @@ class _TaskListItemState extends State<TaskListItem>
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.outline,
               decoration: isCompleted && !_isAnimating
-                  ? TextDecoration.lineThrough 
+                  ? TextDecoration.lineThrough
                   : null,
             ),
             maxLines: 1,
@@ -202,7 +193,7 @@ class _TaskListItemState extends State<TaskListItem>
     final theme = Theme.of(context);
     final isCompleted = widget.task.isCompleted;
     final showCompleted = isCompleted || _isAnimating;
-    
+
     return GestureDetector(
       onTap: _handleToggleCompleted,
       child: AnimatedContainer(
@@ -212,14 +203,12 @@ class _TaskListItemState extends State<TaskListItem>
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
-            color: showCompleted 
-                ? theme.colorScheme.primary 
+            color: showCompleted
+                ? theme.colorScheme.primary
                 : widget.task.priority.color,
             width: 2,
           ),
-          color: showCompleted 
-              ? theme.colorScheme.primary 
-              : Colors.transparent,
+          color: showCompleted ? theme.colorScheme.primary : Colors.transparent,
         ),
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 200),
@@ -239,10 +228,10 @@ class _TaskListItemState extends State<TaskListItem>
     final theme = Theme.of(context);
     final isOverdue = _isOverdue();
     final isToday = _isToday();
-    
+
     Color chipColor;
     Color textColor;
-    
+
     if (widget.task.isCompleted) {
       chipColor = theme.colorScheme.surfaceContainerHighest;
       textColor = theme.colorScheme.outline;
@@ -256,7 +245,7 @@ class _TaskListItemState extends State<TaskListItem>
       chipColor = theme.colorScheme.surfaceContainerHighest;
       textColor = theme.colorScheme.onSurfaceVariant;
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -266,17 +255,11 @@ class _TaskListItemState extends State<TaskListItem>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.calendar_today_outlined,
-            size: 12,
-            color: textColor,
-          ),
+          Icon(Icons.calendar_today_outlined, size: 12, color: textColor),
           const SizedBox(width: 4),
           Text(
             _formatDueDate(),
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: textColor,
-            ),
+            style: theme.textTheme.labelSmall?.copyWith(color: textColor),
           ),
         ],
       ),
@@ -297,8 +280,8 @@ class _TaskListItemState extends State<TaskListItem>
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final dueDate = DateTime(
-      widget.task.dueDate!.year, 
-      widget.task.dueDate!.month, 
+      widget.task.dueDate!.year,
+      widget.task.dueDate!.month,
       widget.task.dueDate!.day,
     );
     return dueDate == today;
@@ -307,17 +290,17 @@ class _TaskListItemState extends State<TaskListItem>
   /// 格式化截止日期
   String _formatDueDate() {
     if (widget.task.dueDate == null) return '';
-    
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
     final yesterday = today.subtract(const Duration(days: 1));
     final dueDate = DateTime(
-      widget.task.dueDate!.year, 
-      widget.task.dueDate!.month, 
+      widget.task.dueDate!.year,
+      widget.task.dueDate!.month,
       widget.task.dueDate!.day,
     );
-    
+
     if (dueDate == today) {
       return '今天';
     } else if (dueDate == tomorrow) {
@@ -337,28 +320,21 @@ class _StrikethroughPainter extends CustomPainter {
   final double progress;
   final Color color;
 
-  _StrikethroughPainter({
-    required this.progress,
-    required this.color,
-  });
+  _StrikethroughPainter({required this.progress, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
     if (progress <= 0) return;
-    
+
     final paint = Paint()
       ..color = color
       ..strokeWidth = 1.5
       ..strokeCap = StrokeCap.round;
-    
+
     final startY = size.height / 2;
     final endX = size.width * progress;
-    
-    canvas.drawLine(
-      Offset(0, startY),
-      Offset(endX, startY),
-      paint,
-    );
+
+    canvas.drawLine(Offset(0, startY), Offset(endX, startY), paint);
   }
 
   @override

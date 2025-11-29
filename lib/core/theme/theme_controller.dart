@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/storage_service.dart';
 
 /// 主题模式枚举
 enum AppThemeMode {
@@ -21,6 +22,14 @@ enum AppThemeMode {
       case AppThemeMode.dark:
         return ThemeMode.dark;
     }
+  }
+
+  /// 从索引创建
+  static AppThemeMode fromIndex(int index) {
+    if (index >= 0 && index < AppThemeMode.values.length) {
+      return AppThemeMode.values[index];
+    }
+    return AppThemeMode.system;
   }
 }
 
@@ -64,8 +73,14 @@ class ThemeController extends ChangeNotifier {
   
   ThemeController._internal();
 
+  final StorageService _storage = StorageService();
+
   AppThemeMode _themeMode = AppThemeMode.system;
   Color _seedColor = ThemeColors.defaultColor;
+  bool _isInitialized = false;
+
+  /// 是否已初始化
+  bool get isInitialized => _isInitialized;
 
   /// 获取当前主题模式
   AppThemeMode get themeMode => _themeMode;
@@ -76,10 +91,29 @@ class ThemeController extends ChangeNotifier {
   /// 获取当前种子颜色
   Color get seedColor => _seedColor;
 
+  /// 从存储加载主题设置
+  Future<void> loadFromStorage() async {
+    // 加载主题模式
+    final savedThemeMode = _storage.getThemeMode();
+    if (savedThemeMode != null) {
+      _themeMode = AppThemeMode.fromIndex(savedThemeMode);
+    }
+
+    // 加载种子颜色
+    final savedColor = _storage.getSeedColor();
+    if (savedColor != null) {
+      _seedColor = Color(savedColor);
+    }
+
+    _isInitialized = true;
+    notifyListeners();
+  }
+
   /// 设置主题模式
   void setThemeMode(AppThemeMode mode) {
     if (_themeMode != mode) {
       _themeMode = mode;
+      _storage.saveThemeMode(mode.index);
       notifyListeners();
     }
   }
@@ -88,6 +122,7 @@ class ThemeController extends ChangeNotifier {
   void setSeedColor(Color color) {
     if (_seedColor != color) {
       _seedColor = color;
+      _storage.saveSeedColor(color.value);
       notifyListeners();
     }
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/services/storage_service.dart';
 import '../../../../core/theme/theme_controller.dart';
 import '../models/models.dart';
 
@@ -10,12 +11,11 @@ class TaskController extends ChangeNotifier {
   factory TaskController() => _instance;
 
   final ThemeController _themeController = ThemeController();
+  final StorageService _storage = StorageService();
 
   TaskController._internal() {
     // 监听主题变化，更新收集箱颜色
     _themeController.addListener(_onThemeChanged);
-    // 初始化默认分组
-    _initInbox();
   }
 
   // 任务列表
@@ -24,9 +24,60 @@ class TaskController extends ChangeNotifier {
   // 分组列表
   final List<TaskGroup> _groups = [];
 
-  /// 初始化收集箱
-  void _initInbox() {
-    _groups.add(_createInbox());
+  // 是否已初始化
+  bool _isInitialized = false;
+
+  /// 是否已初始化
+  bool get isInitialized => _isInitialized;
+
+  /// 从存储加载数据
+  Future<void> loadFromStorage() async {
+    // 加载分组
+    final savedGroups = _storage.getGroups();
+    if (savedGroups != null && savedGroups.isNotEmpty) {
+      _groups.clear();
+      for (final groupMap in savedGroups) {
+        try {
+          _groups.add(TaskGroup.fromMap(groupMap));
+        } catch (e) {
+          // 忽略解析错误的分组
+        }
+      }
+    }
+
+    // 确保收集箱存在
+    if (!_groups.any((g) => g.id == 'inbox')) {
+      _groups.insert(0, _createInbox());
+    }
+
+    // 加载任务
+    final savedTasks = _storage.getTasks();
+    if (savedTasks != null) {
+      _tasks.clear();
+      for (final taskMap in savedTasks) {
+        try {
+          _tasks.add(Task.fromMap(taskMap));
+        } catch (e) {
+          // 忽略解析错误的任务
+        }
+      }
+      _sortTasks();
+    }
+
+    _isInitialized = true;
+    notifyListeners();
+  }
+
+  /// 保存任务到存储
+  Future<void> _saveTasks() async {
+    final taskMaps = _tasks.map((t) => t.toMap()).toList();
+    await _storage.saveTasks(taskMaps);
+  }
+
+  /// 保存分组到存储
+  Future<void> _saveGroups() async {
+    final groupMaps = _groups.map((g) => g.toMap()).toList();
+    await _storage.saveGroups(groupMaps);
   }
 
   /// 创建收集箱（使用当前主题颜色）
@@ -123,6 +174,7 @@ class TaskController extends ChangeNotifier {
   void addTask(Task task) {
     _tasks.add(task);
     _sortTasks();
+    _saveTasks();
     notifyListeners();
   }
 
@@ -155,6 +207,7 @@ class TaskController extends ChangeNotifier {
     if (index != -1) {
       _tasks[index] = task.copyWith(updatedAt: DateTime.now());
       _sortTasks();
+      _saveTasks();
       notifyListeners();
     }
   }
@@ -162,6 +215,7 @@ class TaskController extends ChangeNotifier {
   /// 删除任务
   void deleteTask(String taskId) {
     _tasks.removeWhere((t) => t.id == taskId);
+    _saveTasks();
     notifyListeners();
   }
 
@@ -170,6 +224,7 @@ class TaskController extends ChangeNotifier {
     final index = _tasks.indexWhere((t) => t.id == taskId);
     if (index != -1) {
       _tasks[index] = _tasks[index].toggleCompleted();
+      _saveTasks();
       notifyListeners();
     }
   }
@@ -177,12 +232,14 @@ class TaskController extends ChangeNotifier {
   /// 批量删除任务
   void deleteTasks(List<String> taskIds) {
     _tasks.removeWhere((t) => taskIds.contains(t.id));
+    _saveTasks();
     notifyListeners();
   }
 
   /// 清除所有已完成的任务
   void clearCompletedTasks() {
     _tasks.removeWhere((t) => t.isCompleted);
+    _saveTasks();
     notifyListeners();
   }
 
@@ -191,6 +248,7 @@ class TaskController extends ChangeNotifier {
   /// 添加分组
   void addGroup(TaskGroup group) {
     _groups.add(group);
+    _saveGroups();
     notifyListeners();
   }
 
@@ -214,6 +272,7 @@ class TaskController extends ChangeNotifier {
     final index = _groups.indexWhere((g) => g.id == group.id);
     if (index != -1) {
       _groups[index] = group.copyWith(updatedAt: DateTime.now());
+      _saveGroups();
       notifyListeners();
     }
   }
@@ -230,6 +289,8 @@ class TaskController extends ChangeNotifier {
     }
 
     _groups.removeWhere((g) => g.id == groupId);
+    _saveGroups();
+    _saveTasks();
     notifyListeners();
   }
 

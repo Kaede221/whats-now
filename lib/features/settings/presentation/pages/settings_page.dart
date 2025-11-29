@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/theme_controller.dart';
+import 'about_page.dart';
 
 /// 设置页面
 /// 提供应用设置选项，如主题切换、通知设置等
@@ -61,9 +62,11 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSettingsTile(
             context,
             icon: Icons.info_outline,
-            title: '版本',
-            subtitle: AppConstants.appVersion,
-            onTap: null,
+            title: '关于应用',
+            subtitle: '版本 ${AppConstants.appVersion}',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const AboutPage()),
+            ),
           ),
         ],
       ),

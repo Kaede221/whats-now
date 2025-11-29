@@ -6,6 +6,8 @@ class AppConstants {
   // 应用信息
   static const String appName = 'Kaede Tasks';
   static const String appVersion = '1.0.0';
+  static const String appAuthor = 'KaedeShimizu';
+  static const String appGithubUrl = 'https://github.com/Kaede221/whats-now.git';
 
   // 导航项标签
   static const String navTasks = '任务';

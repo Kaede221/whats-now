@@ -1,11 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'core/services/storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'core/constants/app_constants.dart';
 import 'features/shell/presentation/pages/app_shell.dart';
+import 'features/tasks/domain/controllers/task_controller.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // 初始化存储服务
+  await StorageService().init();
+  
+  // 加载主题设置
+  await ThemeController().loadFromStorage();
+  
+  // 加载任务数据
+  await TaskController().loadFromStorage();
+  
   runApp(const KaedeTasksApp());
 }
 

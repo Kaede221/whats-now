@@ -98,7 +98,6 @@ class _TasksPageState extends State<TasksPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final filteredTasks = _getFilteredTasks();
     final incompleteTasks = filteredTasks.where((t) => !t.isCompleted).toList();
     final completedTasks = filteredTasks.where((t) => t.isCompleted).toList();

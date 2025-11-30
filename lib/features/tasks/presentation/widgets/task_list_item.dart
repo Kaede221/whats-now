@@ -9,6 +9,7 @@ class TaskListItem extends StatefulWidget {
   final VoidCallback? onTap;
   final VoidCallback? onToggleCompleted;
   final VoidCallback? onDelete;
+  final String? groupName;
 
   const TaskListItem({
     super.key,
@@ -16,6 +17,7 @@ class TaskListItem extends StatefulWidget {
     this.onTap,
     this.onToggleCompleted,
     this.onDelete,
+    this.groupName,
   });
 
   @override
@@ -112,11 +114,11 @@ class _TaskListItemState extends State<TaskListItem>
                           child: _buildAnimatedDescription(context),
                         ),
 
-                      // 底部信息行（日期等）
-                      if (widget.task.dueDate != null)
+                      // 底部信息行（日期和分组）
+                      if (widget.task.dueDate != null || widget.groupName != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 8),
-                          child: _buildDueDateChip(context),
+                          child: _buildBottomInfoRow(context),
                         ),
                     ],
                   ),
@@ -226,6 +228,21 @@ class _TaskListItemState extends State<TaskListItem>
     );
   }
 
+  /// 构建底部信息行（日期和分组）
+  Widget _buildBottomInfoRow(BuildContext context) {
+    return Row(
+      children: [
+        // 截止日期标签
+        if (widget.task.dueDate != null) _buildDueDateChip(context),
+        
+        const Spacer(),
+        
+        // 分组标签（右下角）
+        if (widget.groupName != null) _buildGroupChip(context),
+      ],
+    );
+  }
+
   /// 构建截止日期标签
   Widget _buildDueDateChip(BuildContext context) {
     final theme = Theme.of(context);
@@ -263,6 +280,36 @@ class _TaskListItemState extends State<TaskListItem>
           Text(
             _formatDueDate(),
             style: theme.textTheme.labelSmall?.copyWith(color: textColor),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建分组标签
+  Widget _buildGroupChip(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.folder_outlined,
+            size: 12,
+            color: theme.colorScheme.outline,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            widget.groupName!,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.outline,
+            ),
           ),
         ],
       ),

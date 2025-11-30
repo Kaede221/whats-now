@@ -219,6 +219,7 @@ class _TasksPageState extends State<TasksPage> {
             onToggleCompleted: () =>
                 _taskController.toggleTaskCompleted(task.id),
             onDelete: () => _deleteTask(context, task),
+            groupName: _taskController.getGroupById(task.groupId)?.name,
           ),
         ),
 
@@ -254,6 +255,7 @@ class _TasksPageState extends State<TasksPage> {
               onToggleCompleted: () =>
                   _taskController.toggleTaskCompleted(task.id),
               onDelete: () => _deleteTask(context, task),
+              groupName: _taskController.getGroupById(task.groupId)?.name,
             ),
           )
           .toList(),

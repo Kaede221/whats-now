@@ -340,10 +340,9 @@ class _TasksPageState extends State<TasksPage> {
       body: hasAnyTasks
           ? _buildTaskList(context, incompleteTasks, completedTasks, hideDetails)
           : _buildEmptyState(context),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToAddTask(context),
-        icon: const Icon(Icons.add),
-        label: const Text('添加任务'),
+        child: const Icon(Icons.add),
       ),
     );
   }

@@ -11,6 +11,9 @@ import 'features/tasks/domain/controllers/view_settings_controller.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // 初始化应用常量（获取版本信息）
+  await AppConstants.init();
+  
   // 初始化存储服务
   await StorageService().init();
   

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/theme_controller.dart';
+import '../widgets/color_picker_dialog.dart';
 import 'about_page.dart';
 
 /// 设置页面
@@ -111,39 +112,12 @@ class _SettingsPageState extends State<SettingsPage> {
 
   /// 显示颜色选择对话框
   void _showColorPickerDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('选择主题颜色'),
-        contentPadding: const EdgeInsets.all(16),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            alignment: WrapAlignment.center,
-            children: ThemeColors.presetColors.map((option) {
-              final isSelected =
-                  _themeController.seedColor.value == option.color.value;
-              return _ColorButton(
-                color: option.color,
-                name: option.name,
-                isSelected: isSelected,
-                onTap: () {
-                  _themeController.setSeedColor(option.color);
-                  Navigator.of(context).pop();
-                },
-              );
-            }).toList(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
-          ),
-        ],
-      ),
+    ColorPickerDialog.show(
+      context,
+      selectedColor: _themeController.seedColor,
+      onColorSelected: (color) {
+        _themeController.setSeedColor(color);
+      },
     );
   }
 
@@ -220,56 +194,3 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 }
 
-/// 颜色选择按钮
-class _ColorButton extends StatelessWidget {
-  final Color color;
-  final String name;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _ColorButton({
-    required this.color,
-    required this.name,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Tooltip(
-      message: name,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            border: isSelected
-                ? Border.all(color: theme.colorScheme.onSurface, width: 3)
-                : null,
-            boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(0.4),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: isSelected
-              ? Icon(Icons.check, color: _getContrastColor(color), size: 24)
-              : null,
-        ),
-      ),
-    );
-  }
-
-  /// 获取对比色（用于勾选图标）
-  Color _getContrastColor(Color color) {
-    final luminance = color.computeLuminance();
-    return luminance > 0.5 ? Colors.black : Colors.white;
-  }
-}

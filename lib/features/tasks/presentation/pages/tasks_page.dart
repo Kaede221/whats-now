@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../domain/models/models.dart';
 import '../../domain/controllers/task_controller.dart';
 import '../../domain/controllers/view_settings_controller.dart';
 import '../widgets/task_list_item.dart';
 import '../widgets/task_drawer.dart';
 import '../widgets/sort_group_dialog.dart';
+import '../widgets/create_group_dialog.dart';
 import 'add_task_page.dart';
 
 /// 任务页面
@@ -189,7 +189,7 @@ class _TasksPageState extends State<TasksPage> {
                   ),
                   onTap: () async {
                     Navigator.pop(context); // 关闭选择对话框
-                    final newGroup = await _showCreateGroupDialog(context);
+                    final newGroup = await CreateGroupDialog.show(context);
                     if (newGroup != null && mounted) {
                       _moveTasksToGroup(newGroup);
                     }
@@ -238,109 +238,6 @@ class _TasksPageState extends State<TasksPage> {
     );
   }
 
-  /// 显示创建分组对话框
-  Future<TaskGroup?> _showCreateGroupDialog(BuildContext context) async {
-    final theme = Theme.of(context);
-    final nameController = TextEditingController();
-    Color selectedColor = theme.colorScheme.primary;
-
-    // 预设颜色列表
-    final presetColors = [
-      theme.colorScheme.primary,
-      ...AppConstants.groupColors,
-    ];
-
-    return showDialog<TaskGroup>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (dialogContext, setDialogState) => AlertDialog(
-          title: const Text('新建分组'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: '分组名称',
-                  hintText: '输入分组名称',
-                  border: OutlineInputBorder(),
-                ),
-                autofocus: true,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '选择颜色',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: presetColors.map((color) {
-                  final isSelected = selectedColor.value == color.value;
-                  return GestureDetector(
-                    onTap: () {
-                      setDialogState(() => selectedColor = color);
-                    },
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: isSelected
-                            ? Border.all(
-                                color: theme.colorScheme.onSurface,
-                                width: 3,
-                              )
-                            : null,
-                      ),
-                      child: isSelected
-                          ? Icon(
-                              Icons.check,
-                              color: _getContrastColor(color),
-                              size: 20,
-                            )
-                          : null,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () {
-                final name = nameController.text.trim();
-                if (name.isNotEmpty) {
-                  final newGroup = _taskController.createGroup(
-                    name: name,
-                    color: selectedColor,
-                  );
-                  Navigator.pop(dialogContext, newGroup);
-                }
-              },
-              child: const Text('创建'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 获取对比色
-  Color _getContrastColor(Color color) {
-    final luminance = color.computeLuminance();
-    return luminance > 0.5 ? Colors.black : Colors.white;
-  }
-
   /// 批量删除任务（支持撤销）
   void _batchDeleteTasks(BuildContext context) {
     final tasksToDelete = _selectedTaskIds
@@ -383,8 +280,9 @@ class _TasksPageState extends State<TasksPage> {
 
       case TaskFilterType.group:
         if (_currentFilter.groupId != null) {
-          filtered =
-              allTasks.where((t) => t.groupId == _currentFilter.groupId).toList();
+          filtered = allTasks
+              .where((t) => t.groupId == _currentFilter.groupId)
+              .toList();
         } else {
           filtered = List.from(allTasks);
         }
@@ -615,7 +513,12 @@ class _TasksPageState extends State<TasksPage> {
                 },
               ),
         body: hasAnyTasks
-            ? _buildTaskList(context, incompleteTasks, completedTasks, hideDetails)
+            ? _buildTaskList(
+                context,
+                incompleteTasks,
+                completedTasks,
+                hideDetails,
+              )
             : _buildEmptyState(context),
         floatingActionButton: _isSelectionMode
             ? null
@@ -671,9 +574,11 @@ class _TasksPageState extends State<TasksPage> {
               value: 'toggle_details',
               child: Row(
                 children: [
-                  Icon(hideDetails
-                      ? Icons.visibility_outlined
-                      : Icons.visibility_off_outlined),
+                  Icon(
+                    hideDetails
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                  ),
                   const SizedBox(width: 8),
                   Text(hideDetails ? '显示详情' : '隐藏详情'),
                 ],
@@ -736,7 +641,8 @@ class _TasksPageState extends State<TasksPage> {
   Widget _buildSelectionBottomBar(BuildContext context, List<Task> allTasks) {
     final theme = Theme.of(context);
     final allTaskIds = allTasks.map((t) => t.id).toSet();
-    final isAllSelected = _selectedTaskIds.containsAll(allTaskIds) &&
+    final isAllSelected =
+        _selectedTaskIds.containsAll(allTaskIds) &&
         _selectedTaskIds.isNotEmpty &&
         allTaskIds.isNotEmpty;
 

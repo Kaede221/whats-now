@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/models/models.dart';
 import '../../domain/controllers/task_controller.dart';
+import '../widgets/create_group_dialog.dart';
 
 /// 添加/编辑任务页面
 /// 支持设置标题、详情、优先级、分组、日期等属性
@@ -225,9 +226,12 @@ class _AddTaskPageState extends State<AddTaskPage> {
                     child: Text('选择分组', style: theme.textTheme.titleMedium),
                   ),
                   TextButton.icon(
-                    onPressed: () {
+                    onPressed: () async {
                       Navigator.pop(context);
-                      _showCreateGroupDialog(context);
+                      final newGroup = await CreateGroupDialog.show(context);
+                      if (newGroup != null && mounted) {
+                        setState(() => _groupId = newGroup.id);
+                      }
                     },
                     icon: const Icon(Icons.add, size: 18),
                     label: const Text('新建'),
@@ -257,120 +261,6 @@ class _AddTaskPageState extends State<AddTaskPage> {
         ),
       ),
     );
-  }
-
-  /// 显示创建分组对话框
-  void _showCreateGroupDialog(BuildContext context) {
-    final theme = Theme.of(context);
-    final nameController = TextEditingController();
-    Color selectedColor = const Color(0xFF6750A4);
-
-    // 预设颜色列表
-    final presetColors = [
-      const Color(0xFF6750A4), // 紫色
-      const Color(0xFF2196F3), // 蓝色
-      const Color(0xFF4CAF50), // 绿色
-      const Color(0xFFFF9800), // 橙色
-      const Color(0xFFF44336), // 红色
-      const Color(0xFFE91E63), // 粉色
-      const Color(0xFF00BCD4), // 青色
-      const Color(0xFF795548), // 棕色
-    ];
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('新建分组'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 分组名称输入
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: '分组名称',
-                  hintText: '输入分组名称',
-                  border: OutlineInputBorder(),
-                ),
-                autofocus: true,
-              ),
-
-              const SizedBox(height: 16),
-
-              // 颜色选择
-              Text(
-                '选择颜色',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: presetColors.map((color) {
-                  final isSelected = selectedColor.value == color.value;
-                  return GestureDetector(
-                    onTap: () {
-                      setDialogState(() => selectedColor = color);
-                    },
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: isSelected
-                            ? Border.all(
-                                color: theme.colorScheme.onSurface,
-                                width: 3,
-                              )
-                            : null,
-                      ),
-                      child: isSelected
-                          ? Icon(
-                              Icons.check,
-                              color: _getContrastColor(color),
-                              size: 20,
-                            )
-                          : null,
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () {
-                final name = nameController.text.trim();
-                if (name.isNotEmpty) {
-                  final newGroup = _taskController.createGroup(
-                    name: name,
-                    color: selectedColor,
-                  );
-                  setState(() => _groupId = newGroup.id);
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('创建'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// 获取对比色
-  Color _getContrastColor(Color color) {
-    final luminance = color.computeLuminance();
-    return luminance > 0.5 ? Colors.black : Colors.white;
   }
 
   /// 构建日期选择器

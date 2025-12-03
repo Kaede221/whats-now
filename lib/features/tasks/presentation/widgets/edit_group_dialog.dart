@@ -69,75 +69,80 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
 
     return AlertDialog(
       title: Text(isInbox ? '收集箱设置' : '编辑分组'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: '分组名称',
-              hintText: '输入分组名称',
-              border: OutlineInputBorder(),
-            ),
-            autofocus: true,
-            enabled: !isInbox, // 收集箱名称不可修改
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '选择颜色',
-            style: theme.textTheme.titleSmall?.copyWith(
-              color: theme.colorScheme.primary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: presetColors.map((color) {
-              final isSelected = _selectedColor.value == color.value;
-              return GestureDetector(
-                onTap: () {
-                  setState(() => _selectedColor = color);
-                },
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                    border: isSelected
-                        ? Border.all(
-                            color: theme.colorScheme.onSurface,
-                            width: 3,
-                          )
-                        : null,
-                  ),
-                  child: isSelected
-                      ? Icon(
-                          Icons.check,
-                          color: _getContrastColor(color),
-                          size: 20,
-                        )
-                      : null,
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: '分组名称',
+                  hintText: '输入分组名称',
+                  border: OutlineInputBorder(),
                 ),
-              );
-            }).toList(),
+                autofocus: true,
+                enabled: !isInbox, // 收集箱名称不可修改
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '选择颜色',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: presetColors.map((color) {
+                  final isSelected = _selectedColor.value == color.value;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() => _selectedColor = color);
+                    },
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                        border: isSelected
+                            ? Border.all(
+                                color: theme.colorScheme.onSurface,
+                                width: 3,
+                              )
+                            : null,
+                      ),
+                      child: isSelected
+                          ? Icon(
+                              Icons.check,
+                              color: _getContrastColor(color),
+                              size: 20,
+                            )
+                          : null,
+                    ),
+                  );
+                }).toList(),
+              ),
+              // 显示分组信息
+              const SizedBox(height: 16),
+              _buildInfoRow(
+                context,
+                '创建时间',
+                _formatDateTime(widget.group.createdAt),
+              ),
+              const SizedBox(height: 4),
+              _buildInfoRow(
+                context,
+                '任务数量',
+                '${_taskController.getTasksByGroup(widget.group.id).length} 个任务',
+              ),
+            ],
           ),
-          // 显示分组信息
-          const SizedBox(height: 16),
-          _buildInfoRow(
-            context,
-            '创建时间',
-            _formatDateTime(widget.group.createdAt),
-          ),
-          const SizedBox(height: 4),
-          _buildInfoRow(
-            context,
-            '任务数量',
-            '${_taskController.getTasksByGroup(widget.group.id).length} 个任务',
-          ),
-        ],
+        ),
       ),
       actions: [
         // 删除按钮（收集箱不可删除）
@@ -147,13 +152,13 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('删除'),
           ),
-        const Spacer(),
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('取消'),
         ),
         TextButton(onPressed: _saveGroup, child: const Text('保存')),
       ],
+      actionsAlignment: isInbox ? MainAxisAlignment.end : MainAxisAlignment.spaceBetween,
     );
   }
 

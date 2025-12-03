@@ -1,0 +1,276 @@
+# Whats Now - 项目代码结构总结
+
+## 项目概述
+这是一个 Flutter 跨平台任务管理应用，名为 "Whats Now"，口号是 "Manage Now"。
+支持 Android、iOS、macOS、Windows、Web 等多平台。
+
+---
+
+## 目录结构
+
+```
+lib/
+├── main.dart                    # 应用入口
+├── core/                        # 核心模块
+│   ├── constants/
+│   │   └── app_constants.dart   # 应用常量配置
+│   ├── services/
+│   │   ├── storage_service.dart # 数据持久化服务
+│   │   └── version_check_service.dart # 版本检查服务
+│   └── theme/
+│       ├── app_theme.dart       # 主题配置
+│       └── theme_controller.dart # 主题控制器
+└── features/                    # 功能模块
+    ├── shell/                   # 应用外壳
+    │   └── presentation/pages/
+    │       └── app_shell.dart   # 底部导航栏管理
+    ├── tasks/                   # 任务功能
+    │   ├── domain/
+    │   │   ├── controllers/
+    │   │   │   ├── task_controller.dart      # 任务控制器
+    │   │   │   └── view_settings_controller.dart # 视图设置控制器
+    │   │   └── models/
+    │   │       ├── task.dart           # 任务模型
+    │   │       ├── task_group.dart     # 任务分组模型
+    │   │       ├── task_priority.dart  # 任务优先级枚举
+    │   │       ├── task_filter.dart    # 任务筛选器
+    │   │       ├── view_settings.dart  # 视图设置模型
+    │   │       └── models.dart         # 模型导出文件
+    │   └── presentation/
+    │       ├── pages/
+    │       │   ├── tasks_page.dart     # 任务列表页面
+    │       │   └── add_task_page.dart  # 添加/编辑任务页面
+    │       └── widgets/
+    │           ├── task_list_item.dart     # 任务列表项组件
+    │           ├── task_drawer.dart        # 侧边栏抽屉
+    │           ├── create_group_dialog.dart # 创建分组对话框
+    │           ├── edit_group_dialog.dart   # 编辑分组对话框
+    │           └── sort_group_dialog.dart   # 排序分组对话框
+    └── settings/                # 设置功能
+        └── presentation/
+            ├── pages/
+            │   ├── settings_page.dart  # 设置页面
+            │   └── about_page.dart     # 关于页面
+            └── widgets/
+                └── color_picker_dialog.dart # 颜色选择对话框
+```
+
+---
+
+## 核心模块详解
+
+### 1. 应用入口 (main.dart)
+- 初始化顺序：AppConstants → StorageService → ThemeController → TaskController → ViewSettingsController
+- 使用 MaterialApp，支持中文本地化
+- 动态主题切换（浅色/深色/跟随系统）
+
+### 2. 存储服务 (storage_service.dart)
+- 单例模式
+- 使用 SharedPreferences 进行数据持久化
+- 存储键名：
+  - `theme_mode` - 主题模式
+  - `seed_color` - 种子颜色
+  - `tasks` - 任务列表 (JSON)
+  - `groups` - 分组列表 (JSON)
+  - `view_settings` - 视图设置 (JSON)
+
+### 3. 主题系统 (theme_controller.dart, app_theme.dart)
+- 支持三种主题模式：跟随系统、浅色、深色
+- 12种预设主题颜色
+- 使用 Material 3 ColorScheme.fromSeed 生成主题
+- ThemeController 是单例，继承 ChangeNotifier
+
+### 4. 版本检查服务 (version_check_service.dart)
+- 从 GitHub API 获取最新版本
+- 比较版本号判断是否需要更新
+- 支持打开更新链接
+
+---
+
+## 任务功能模块详解
+
+### 1. 任务模型 (task.dart)
+**核心字段：**
+- id, title, description
+- priority (TaskPriority 枚举)
+- groupId (所属分组)
+- dueDate (截止日期)
+- isCompleted, completedAt
+- createdAt, updatedAt
+- sortOrder
+
+**预留字段（未来扩展）：**
+- reminderAt (提醒时间)
+- repeatRule (重复规则)
+- tags (标签列表)
+- attachments (附件)
+- subtaskIds, parentId (子任务)
+
+**关键方法：**
+- `Task.create()` - 工厂方法创建新任务
+- `copyWith()` - 复制并修改
+- `toggleCompleted()` - 切换完成状态
+- `toMap()` / `fromMap()` - 序列化
+
+### 2. 任务分组模型 (task_group.dart)
+- id, name, color, icon
+- 默认分组：收集箱 (id='inbox')
+- 收集箱颜色跟随主题色变化
+
+### 3. 任务优先级 (task_priority.dart)
+- none (无/灰色)
+- low (低/蓝色)
+- medium (中/黄色)
+- high (高/红色)
+
+### 4. 任务筛选器 (task_filter.dart)
+**筛选类型：**
+- all - 所有任务
+- group - 按分组
+- dateRange - 按时间范围
+
+**预设筛选器：**
+- next7Days (近七天)
+- next30Days (近一个月)
+- allTasks (所有任务)
+
+### 5. 视图设置 (view_settings.dart)
+**分组方式 (GroupBy)：**
+- none (不分组)
+- group (按分组)
+- dueDate (按时间)
+- priority (按优先级)
+
+**排序方式 (SortBy)：**
+- createdAt (创建时间)
+- dueDate (截止时间)
+- priority (优先级)
+
+**排序顺序 (SortOrder)：**
+- ascending (升序)
+- descending (降序)
+
+### 6. 任务控制器 (task_controller.dart)
+- 单例模式，继承 ChangeNotifier
+- 管理任务和分组的 CRUD 操作
+- 自动保存到 StorageService
+- 监听主题变化更新收集箱颜色
+
+**关键方法：**
+- `loadFromStorage()` - 加载数据
+- `createTask()` / `addTask()` / `updateTask()` / `deleteTask()`
+- `toggleTaskCompleted()`
+- `createGroup()` / `updateGroup()` / `deleteGroup()`
+- `getTasksByGroup()` / `getTasksByPriority()`
+- `todayTasks` / `overdueTasks` / `incompleteTasks` / `completedTasks`
+
+### 7. 视图设置控制器 (view_settings_controller.dart)
+- 单例模式，继承 ChangeNotifier
+- 管理视图设置的读取和修改
+- 记录上次查看的筛选器ID (lastFilterId)
+
+---
+
+## UI 组件详解
+
+### 1. 应用外壳 (app_shell.dart)
+- 底部导航栏：任务、设置
+- 使用 IndexedStack 保持页面状态
+
+### 2. 任务页面 (tasks_page.dart)
+**功能：**
+- 任务列表显示（支持分组显示）
+- 筛选器切换（侧边栏抽屉）
+- 多选模式（长按进入）
+- 批量操作：设置日期、移动分组、删除
+- 已完成任务折叠显示
+- 双击返回退出应用
+
+**AppBar 菜单：**
+- 显示/隐藏详情
+- 排序方式
+- 批量编辑
+- 清除已完成
+
+### 3. 添加/编辑任务页面 (add_task_page.dart)
+- 标题输入（必填）
+- 详情输入（可选）
+- 优先级选择（ChoiceChip）
+- 分组选择（BottomSheet）
+- 截止日期选择（DatePicker）
+
+### 4. 任务列表项 (task_list_item.dart)
+- 左侧：完成状态复选框（带动画）
+- 中间：标题、描述、日期标签、分组标签
+- 滑动删除（Dismissible）
+- 长按进入多选模式
+- 完成时有划线动画效果
+
+### 5. 侧边栏抽屉 (task_drawer.dart)
+- 时间筛选器列表
+- 分组列表（显示任务数量）
+- 新建分组按钮
+- 长按分组可编辑
+
+### 6. 分组对话框
+**创建分组 (create_group_dialog.dart)：**
+- 名称输入
+- 颜色选择
+
+**编辑分组 (edit_group_dialog.dart)：**
+- 名称修改（收集箱不可改）
+- 颜色修改
+- 显示创建时间和任务数量
+- 删除分组（收集箱不可删）
+
+### 7. 排序分组对话框 (sort_group_dialog.dart)
+- 分组方式选择
+- 排序方式选择
+- 排序顺序切换
+
+---
+
+## 设置功能模块
+
+### 1. 设置页面 (settings_page.dart)
+- 深色模式切换
+- 主题颜色选择
+- 关于应用入口
+
+### 2. 关于页面 (about_page.dart)
+- 应用图标和名称
+- 版本信息（自动检查更新）
+- 作者信息
+- GitHub 链接
+- 点击可复制内容
+
+### 3. 颜色选择对话框 (color_picker_dialog.dart)
+- 预设颜色网格
+- 选中状态显示
+
+---
+
+## 常量配置 (app_constants.dart)
+- 应用名称：Whats Now
+- 应用口号：Manage Now
+- 作者：KaedeShimizu
+- GitHub：https://github.com/Kaede221/whats-now.git
+- 预设分组颜色列表
+
+---
+
+## 快速定位指南
+
+| 需求 | 文件位置 |
+|------|----------|
+| 添加新的任务字段 | `lib/features/tasks/domain/models/task.dart` |
+| 修改任务列表显示 | `lib/features/tasks/presentation/pages/tasks_page.dart` |
+| 修改任务项样式 | `lib/features/tasks/presentation/widgets/task_list_item.dart` |
+| 添加新的筛选器 | `lib/features/tasks/domain/models/task_filter.dart` |
+| 修改主题颜色 | `lib/core/theme/theme_controller.dart` |
+| 添加新的设置项 | `lib/features/settings/presentation/pages/settings_page.dart` |
+| 修改数据存储 | `lib/core/services/storage_service.dart` |
+| 添加新的分组方式 | `lib/features/tasks/domain/models/view_settings.dart` |
+| 修改任务控制逻辑 | `lib/features/tasks/domain/controllers/task_controller.dart` |
+| 添加新的页面 | 在 `lib/features/` 下创建新模块 |
+| 修改底部导航 | `lib/features/shell/presentation/pages/app_shell.dart` |
